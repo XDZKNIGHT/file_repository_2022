@@ -632,6 +632,32 @@ def adminUploadFile(request):
 
         return redirect('AdminHomepage')
 
+def adminUploadFile(request):
+    if request.method == 'POST':
+        tz = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.datetime.now(tz)
+        upload = UploadedFile(file=request.FILES['file'],
+                              file_name=request.POST.get('file_name'),
+                              file_type=request.POST.get('file_type'),
+                              uploader=request.session['logged_username'],
+                              uploaded_date=str(now))
+
+        upload.save()
+
+        description = 'Admin uploaded a file.'
+
+        tz = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.datetime.now(tz)
+        log = ActivityLogs(user=request.session['logged_username'],
+                        description=description,
+                        file_name=request.POST.get('file_name'),
+                        file_type=request.POST.get('file_type'),
+                        log_date=str(now))
+
+        log.save()
+
+        return redirect('AdminHomepage')
+
 def delete_user(request):
     user_id = request.GET.get('user_id')
     profile = Profiles.objects.get(id=int(user_id))
@@ -758,9 +784,7 @@ def generate_pdf(request):
         return JsonResponse(data)
     
     if is_ajax(request=request):
-
         context['files'] = fileSearch(request)
-
         data = {'rendered_table': render_to_string(
             'table_files.html', context=context)}
         return JsonResponse(data)
@@ -772,9 +796,7 @@ def generate_pdf(request):
         return JsonResponse(data)
     
     if is_ajax(request=request):
-
         context['users'] = adminUserSearch(request)
-
         data = {'rendered_table': render_to_string(
             'table_adminUser.html', context=context)}
         return JsonResponse(data)
