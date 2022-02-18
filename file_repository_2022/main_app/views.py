@@ -6,10 +6,15 @@ from typing import Dict
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from main_app.models import ActivityLogs
 from main_app.models import ArchiveFile
 from main_app.models import Profiles, Archive
 from main_app.models import UploadedFile
 from main_app.models import Archive
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.core.paginator import Paginator
 
 
 import datetime
@@ -20,7 +25,7 @@ from django.db.models import Q
 import json
 from django.template.loader import render_to_string
 from .utils import *
-from .filters import UserFileFilter, AdminFileFilter, UserArchiveFileFilter, AdminArchiveFileFilter
+from .filters import ActivityLogFileFilter, UserFileFilter, AdminFileFilter, UserArchiveFileFilter, AdminArchiveFileFilter
 # Create your views here.
 
 
@@ -101,6 +106,19 @@ def register(request):
                              security_question=request.POST['SQuestion'],
                              security_answer=request.POST['SAnswer'], )
                 p.save()
+
+                description = 'New user registered.'
+
+                tz = pytz.timezone('Asia/Hong_Kong')
+                now = datetime.datetime.now(tz)
+                log = ActivityLogs(user=request.POST['userName'],
+                                    description=description,
+                                    file_name='---',
+                                    file_type='---',
+                                    log_date=str(now))
+
+                log.save()
+
                 return render(request, 'index.html')
         except:
             pass
@@ -218,6 +236,19 @@ def UserChangePassword(request):
         if(errorCount == 0):
             found.password = request.POST['NewPass']
             found.save()
+
+            description = 'User password changed.'
+
+            tz = pytz.timezone('Asia/Hong_Kong')
+            now = datetime.datetime.now(tz)
+            log = ActivityLogs(user=Profiles.objects.get(id=request.session['logged_id']),
+                                description=description,
+                                file_name='---',
+                                file_type='---',
+                                log_date=str(now))
+
+            log.save()
+
             return redirect('UserProfile')
         else:
             return redirect('UserChangePassword')
@@ -259,6 +290,19 @@ def UserEditAccount(request):
                     profile.save()
             except:
                 pass
+
+            description = 'User account was edited.'
+
+            tz = pytz.timezone('Asia/Hong_Kong')
+            now = datetime.datetime.now(tz)
+            log = ActivityLogs(user=Profiles.objects.get(id=request.session['logged_id']),
+                                description=description,
+                                file_name='---',
+                                file_type='---',
+                                log_date=str(now))
+
+            log.save()
+
             return redirect('UserProfile')
 
         return redirect('UserEditAccount')
@@ -344,6 +388,19 @@ def AdminEditAccount(request):
                     admin.save()
             except:
                 pass
+
+            description = 'Admin account was edited.'
+
+            tz = pytz.timezone('Asia/Hong_Kong')
+            now = datetime.datetime.now(tz)
+            log = ActivityLogs(user=Profiles.objects.get(id=request.session['logged_id']),
+                                description=description,
+                                file_name='---',
+                                file_type='---',
+                                log_date=str(now))
+
+            log.save()
+
             return redirect('AdminProfile')
         else:
             return redirect('AdminEditAccount')
@@ -373,6 +430,19 @@ def AdminChangePassword(request):
         if(errorCount == 0):
             user.password = request.POST['NewPass']
             user.save()
+
+            description = 'Admin account password changed.'
+
+            tz = pytz.timezone('Asia/Hong_Kong')
+            now = datetime.datetime.now(tz)
+            log = ActivityLogs(user=Profiles.objects.get(id=request.session['logged_id']),
+                        description=description,
+                        file_name='---',
+                        file_type='---',
+                        log_date=str(now))
+
+            log.save()
+
             return redirect('AdminProfile')
         else:
             return redirect('AdminChangePassword')
@@ -473,6 +543,42 @@ def AdminEditUser(request):
         return redirect('UserHomepage')
     return render(request, 'AdminEditUser.html')
 
+def AdminReport(request):
+    if('logged_email' not in request.session):
+        return render(request, 'index.html')
+    if(not request.session['logged_user_type']):
+        return redirect('UserHomepage')
+    try:
+        user = Profiles.objects.get(id=request.session['logged_id'])
+    except:
+        pass
+
+    files = ActivityLogs.objects.all()
+    fileFilter = ActivityLogFileFilter(request.GET, queryset=files)
+    files = fileFilter.qs
+
+    queue = []
+
+    for file in files:
+        value = file
+        queue.append(value)
+
+    paginator = Paginator(queue, 15)
+    page_number = request.GET.get('page') or 1
+    item_list = paginator.get_page(page_number)
+
+    context = {'username': user.username, 'email': user.eMail,
+               'profile_picture': user.profile_picture,
+               'files': files, 'fileFilter': fileFilter,
+               'item_list':item_list}
+
+    if is_ajax(request=request):
+        context['files'] = activityReportSearch(request)
+        data = {'rendered_table': render_to_string(
+            'table_files.html', context=context)}
+        return JsonResponse(data)
+
+    return render(request, 'AdminReport.html', context)
 
 def uploadFile(request):
     if request.method == 'POST':
@@ -486,8 +592,45 @@ def uploadFile(request):
 
         upload.save()
 
+        description = 'User uploaded a file.'
+
+        tz = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.datetime.now(tz)
+        log = ActivityLogs(user=request.session['logged_username'],
+                        description=description,
+                        file_name=request.POST.get('file_name'),
+                        file_type=request.POST.get('file_type'),
+                        log_date=str(now))
+
+        log.save()
+
         return redirect('UserHomepage')
 
+def adminUploadFile(request):
+    if request.method == 'POST':
+        tz = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.datetime.now(tz)
+        upload = UploadedFile(file=request.FILES['file'],
+                              file_name=request.POST.get('file_name'),
+                              file_type=request.POST.get('file_type'),
+                              uploader=request.session['logged_username'],
+                              uploaded_date=str(now))
+
+        upload.save()
+
+        description = 'Admin uploaded a file.'
+
+        tz = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.datetime.now(tz)
+        log = ActivityLogs(user=request.session['logged_username'],
+                        description=description,
+                        file_name=request.POST.get('file_name'),
+                        file_type=request.POST.get('file_type'),
+                        log_date=str(now))
+
+        log.save()
+
+        return redirect('AdminHomepage')
 
 def delete_user(request):
     user_id = request.GET.get('user_id')
@@ -500,12 +643,38 @@ def delete_user(request):
         security_answer=profile.security_answer,
         user_id=profile.id)
     archive.save()
+
+    description = 'User sent to Account Archive.'
+
+    tz = pytz.timezone('Asia/Hong_Kong')
+    now = datetime.datetime.now(tz)
+    log = ActivityLogs(user=profile.username,
+                        description=description,
+                        file_name='---',
+                        file_type='---',
+                        log_date=str(now))
+
+    log.save()
+
     Profiles.objects.filter(id=user_id).update(archived=True)
     return redirect(request.META['HTTP_REFERER'])
 
 
 def retrieve_user(request):
     user_id = request.GET.get('user_id')
+    profile = Profiles.objects.get(id=int(user_id))
+    description = 'User has been retrieved.'
+
+    tz = pytz.timezone('Asia/Hong_Kong')
+    now = datetime.datetime.now(tz)
+    log = ActivityLogs(user=profile.username,
+                        description=description,
+                        file_name='---',
+                        file_type='---',
+                        log_date=str(now))
+
+    log.save()
+
     Archive.objects.filter(user_id=int(user_id)).delete()
     Profiles.objects.filter(id=user_id).update(archived=False)
     return redirect(request.META['HTTP_REFERER'])
@@ -513,6 +682,19 @@ def retrieve_user(request):
 
 def permanent_delete_user(request):
     user_id = request.GET.get('user_id')
+    profile = Profiles.objects.get(id=int(user_id))
+    description = 'User permanently deleted.'
+
+    tz = pytz.timezone('Asia/Hong_Kong')
+    now = datetime.datetime.now(tz)
+    log = ActivityLogs(user=profile.username,
+                        description=description,
+                        file_name='---',
+                        file_type='---',
+                        log_date=str(now))
+
+    log.save()
+
     Archive.objects.filter(user_id=int(user_id)).delete()
     Profiles.objects.filter(id=user_id).delete()
     return redirect(request.META['HTTP_REFERER'])
@@ -543,3 +725,79 @@ def permanent_delete_file(request):
     ArchiveFile.objects.filter(file_id=int(file_id)).delete()
     UploadedFile.objects.filter(file_id=file_id).delete()
     return redirect(request.META['HTTP_REFERER'])
+
+def generate_pdf(request):
+    if request.method == 'POST':
+        if('logged_email' not in request.session):
+            return render(request, 'index.html')
+    if(not request.session['logged_user_type']):
+        return redirect('UserHomepage')
+    try:
+        user = Profiles.objects.get(id=request.session['logged_id'])
+    except:
+        pass
+
+    logs = ActivityLogs.objects.all()
+    users = Profiles.objects.all()
+    archivedUsers = Archive.objects.all()
+    files = UploadedFile.objects.all()
+    archivedFiles = ArchiveFile.objects.all()
+
+    context = {'username': user.username, 'email': user.eMail,
+               'profile_picture': user.profile_picture,
+               'logs': logs,
+               'users':users,
+               'archivedUsers': archivedUsers,
+               'files': files,
+               'archivedFiles': archivedFiles}
+
+    if is_ajax(request=request):
+        context['logs'] = activityReportSearch(request)
+        data = {'rendered_table': render_to_string(
+            'table_files.html', context=context)}
+        return JsonResponse(data)
+    
+    if is_ajax(request=request):
+
+        context['files'] = fileSearch(request)
+
+        data = {'rendered_table': render_to_string(
+            'table_files.html', context=context)}
+        return JsonResponse(data)
+
+    if is_ajax(request=request):
+        context['archivedFiles'] = fileArchiveSearch(request)
+        data = {'rendered_table': render_to_string(
+            'table_files.html', context=context)}
+        return JsonResponse(data)
+    
+    if is_ajax(request=request):
+
+        context['users'] = adminUserSearch(request)
+
+        data = {'rendered_table': render_to_string(
+            'table_adminUser.html', context=context)}
+        return JsonResponse(data)
+
+    if is_ajax(request=request):
+        context['archivedUsers'] = adminArchiveUserSearch(request)
+        data = {'rendered_table': render_to_string(
+            'table_adminArchiveUser.html', context=context)}
+        return JsonResponse(data)
+
+    template_path = 'generate_pdf.html'
+    # # find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+        
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    
+    return None
+
+    
+
+    
+

@@ -276,6 +276,24 @@ $('#admin_file_archive').on('keyup', function (e) {
   });
 });
 
+$('#activity_report_logs').on('keyup', function (e) {
+  e.preventDefault();
+
+  $.ajax({
+    type: 'get',
+    url: "/AdminReport/",
+    data: {
+      search: $('#activity_report_logs').val()
+    },
+    success: function (data) {
+      $('#table').html(data.rendered_table);
+    },
+    error: function (data) {
+      alert('an error');
+    },
+  });
+});
+
 formlogout.addEventListener("click", function (event) {
   event.preventDefault();
   Swal.fire({
@@ -330,6 +348,8 @@ $(window).on('load', function () {
 function clearform() {
   document.getElementById("form_filter").reset();
 }
+
+
 
 $(document).ready(function () {
   $('#m_table').dataTable({ searching: false, paging: false, info: false });

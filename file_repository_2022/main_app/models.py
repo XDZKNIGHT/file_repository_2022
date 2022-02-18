@@ -47,3 +47,13 @@ class ArchiveFile(models.Model):
 
     def __str__(self):
         return self.file_name
+
+class ActivityLogs(models.Model):
+    user = models.CharField(max_length=30, null=False, blank=False)
+    description = models.CharField(max_length=100, null=False, blank=False)
+    file_name = models.CharField(max_length=30, null=True, blank=True)
+    file_type = models.CharField(max_length=30, null=True, blank=True , default = 'file')
+    log_date = models.CharField(max_length=35, null=False, blank=False , default = 'date')
+
+    def __str__(self):
+        return self.user

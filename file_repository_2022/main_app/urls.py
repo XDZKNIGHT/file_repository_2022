@@ -17,6 +17,8 @@ urlpatterns = [
     path('AdminChangePassword/', views.AdminChangePassword,
          name='AdminChangePassword'),
     path('AdminArchive/', views.AdminArchive, name='AdminArchive'),
+    path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
+    path('AdminReport/', views.AdminReport, name='AdminReport'),
     path('AdminUserTab/', views.AdminUserTab, name='AdminUserTab'),
     path('AdminFileArchive/', views.AdminFileArchive, name='AdminFileArchive'),
     path('AdminCreateUser/', views.AdminCreateUser, name='AdminCreateUser'),

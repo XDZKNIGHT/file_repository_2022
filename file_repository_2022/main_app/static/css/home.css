@@ -864,7 +864,8 @@ select {
 
 #AdminArchive,
 #AdminFiles,
-#AdminUserTab {
+#AdminUserTab,
+#AdminReport {
   text-decoration: none;
   color: black;
 }

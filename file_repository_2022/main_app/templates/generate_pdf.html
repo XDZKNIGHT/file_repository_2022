@@ -1,0 +1,149 @@
+{% load static %}
+{% block content %}
+<div class="home-container">
+  <div class="main-bar">
+    <h1 style="text-align: center; font-weight: bold;margin: 20px;">ACTIVITY LOG</h1>
+    <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
+      <table class="table table-striped table-hover" id="m_table" style="border: 1px solid black;
+      border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding-top: 4px;">User</th>
+            <th style="padding-top: 4px;">Description</th>
+            <th style="padding-top: 4px;">File Name</th>
+            <th style="padding-top: 4px;">Category</th>
+            <th style="padding-top: 4px;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td style="padding-top: 4px;">{{ log.user }}</td>
+            <td style="padding-top: 4px;">{{ log.description }}</td>
+            <td style="padding-top: 4px;">{{ log.file_name }}</td>
+            <td style="padding-top: 4px;">{{ log.file_type }}</td>
+            <td style="padding-top: 4px;">{{ log.log_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </table>
+    </div>
+
+    <h1 style="text-align: center; font-weight: bold;margin: 40px 0px 20px 0px; ">LIST OF USERS</h1>
+    <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
+      <table class="table table-striped table-hover" id="m_table" style="border: 1px solid black;
+      border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding-top: 4px;">User ID</th>
+            <th style="padding-top: 4px;">Username</th>
+            <th style="padding-top: 4px;">Email</th>
+            <th style="padding-top: 4px;">Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td style="padding-top: 4px;">{{ user.id }}</td>
+            <td style="padding-top: 4px;">{{ user.username }}</td>
+            <td style="padding-top: 4px;">{{ user.eMail }}</td>
+            {% if user.admin == True %}
+              <td style="padding-top: 4px;text-align: center;">Yes</td>
+            {% else %}
+              <td style="padding-top: 4px;text-align: center;">No</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </table>
+    </div>
+
+    <h1 style="text-align: center; font-weight: bold;margin: 40px 0px 20px 0px; ">LIST OF ARCHIVED USERS</h1>
+    <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
+      <table class="table table-striped table-hover" id="m_table" style="border: 1px solid black;
+      border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding-top: 4px;">User ID</th>
+            <th style="padding-top: 4px;">Username</th>
+            <th style="padding-top: 4px;">Email</th>
+            <th style="padding-top: 4px;">Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for archivedUser in archivedUsers %}
+          <tr>
+            <td style="padding-top: 4px;">{{ archivedUser.id }}</td>
+            <td style="padding-top: 4px;">{{ archivedUser.username }}</td>
+            <td style="padding-top: 4px;">{{ archivedUser.eMail }}</td>
+            {% if archivedUser.admin == True %}
+              <td style="padding-top: 4px;text-align: center;">Yes</td>
+            {% else %}
+              <td style="padding-top: 4px;text-align: center;">No</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </table>
+    </div>
+
+    <h1 style="text-align: center; font-weight: bold;margin: 40px 0px 20px 0px; ">LIST OF FILES</h1>
+    <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
+      <table class="table table-striped table-hover" id="m_table" style="border: 1px solid black;
+      border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding-top: 4px;">File ID</th>
+            <th style="padding-top: 4px;">File Name</th>
+            <th style="padding-top: 4px;">File Type</th>
+            <th style="padding-top: 4px;">Uploader</th>
+            <th style="padding-top: 4px;">Upload Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr>
+            <td style="padding-top: 4px;">{{ file.file_id }}</td>
+            <td style="padding-top: 4px;">{{ file.file_name }}</td>
+            <td style="padding-top: 4px;">{{ file.file_type }}</td>
+            <td style="padding-top: 4px;">{{ file.uploader }}</td>
+            <td style="padding-top: 4px;">{{ file.uploaded_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </table>
+    </div>
+
+    <h1 style="text-align: center; font-weight: bold;margin: 40px 0px 20px 0px; ">LIST OF ARCHIVED FILES</h1>
+    <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
+      <table class="table table-striped table-hover" id="m_table" style="border: 1px solid black;
+      border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding-top: 4px;">File Name</th>
+            <th style="padding-top: 4px;">File Type</th>
+            <th style="padding-top: 4px;">Uploader</th>
+            <th style="padding-top: 4px;">Upload Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for archivedFile in archivedFiles %}
+          <tr>
+            <td style="padding-top: 4px;">{{ archivedFile.file_name }}</td>
+            <td style="padding-top: 4px;">{{ archivedFile.file_type }}</td>
+            <td style="padding-top: 4px;">{{ archivedFile.uploader }}</td>
+            <td style="padding-top: 4px;">{{ archivedFile.uploaded_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

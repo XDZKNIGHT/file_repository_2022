@@ -23,6 +23,7 @@
       <a id="AdminArchive" href="{% url 'AdminArchive' %}">
         <li class="li">Account Archive</li>
       </a>
+      <a id="AdminReport" href="{% url 'AdminReport' %}"><li class="li">Activity Log</li></a>
     </ul>
   </div>
   <div class="main-bar">
@@ -90,17 +91,19 @@
         <h5 class="modal-title" id="staticBackdropLabel">Upload a file/Document</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      <form action="/adminUploadFile/" method="post" enctype="multipart/form-data" id="upload_form">
+        {% csrf_token %}
       <div class="modal-body">
         <div class="row g-2">
           <div class="col-md">
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingInputGrid" placeholder="File Name">
+              <input type="text" class="form-control" id="floatingInputGrid" placeholder="File Name" required>
               <label for="floatingInputGrid">File Name</label>
             </div>
           </div>
           <div class="col-md" style="margin-bottom: 10px;">
             <div class="form-floating">
-              <select class="form-select" id="floatingSelectGrid" aria-label="Floating label select example">
+              <select class="form-select" id="floatingSelectGrid" aria-label="Floating label select example" form="upload_form" required>
                 <option selected>Choose a file category</option>
                 <option value="Audio">Audio</option>
                 <option value="Video">Video</option>
@@ -119,6 +122,7 @@
         <button type="button" class="btn btn-primary">Upload</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
+    </form>
     </div>
   </div>
 </div>

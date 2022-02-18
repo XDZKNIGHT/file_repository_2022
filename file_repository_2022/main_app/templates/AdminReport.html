@@ -15,7 +15,7 @@
         <li class="li">Files</li>
       </a>
       <a id="AdminFiles" href="{% url 'AdminFileArchive' %}">
-        <li class="li active">File Archive</li>
+        <li class="li">File Archive</li>
       </a>
       <a id="AdminUserTab" href="{% url 'AdminUserTab' %}">
         <li class="li">Users</li>
@@ -23,56 +23,67 @@
       <a id="AdminArchive" href="{% url 'AdminArchive' %}">
         <li class="li">Account Archive</li>
       </a>
-      <a id="AdminReport" href="{% url 'AdminReport' %}"><li class="li">Activity Log</li></a>
+      <a id="AdminReport" href="{% url 'AdminReport' %}"><li class="li active">Activity Log</li></a>
     </ul>
   </div>
   <div class="main-bar">
     <div class="section ">
-      <form action="{% url 'AdminFileArchive' %}" method="GET" id="form_filter">
+      <form action="{% url 'AdminReport' %}" method="GET" id="form_filter">
         {% csrf_token %}
         {{fileFilter.form}}
-        <div>
-          <button class="filter"> <a href="{% url 'AdminFileArchive' %}" style="text-decoration: none;color: white;">
+          <button class="filter"> <a href="{% url 'AdminReport' %}" style="text-decoration: none;color: white;">
               Clear
               Field</a></button>
           <button class="filter">Filter</button>
-        </div>
-
       </form>
-    </div>
-    <div class="section search">
-      <form action="{% url 'UserHomepage' %}" method="GET" autocomplete="off">
+      <form action="{% url 'AdminReport' %}" method="GET" id="form_filter">
         {% csrf_token %}
-        <input type="text" placeholder="Search" name="search" id="admin_file_archive">
+      <button class="filter" style ="margin: 20px 0px 20px 0px;"> <a href="{% url 'generate_pdf' %}" style="text-decoration: none;color: white;" target="_blank">
+        Download PDF </a></button>
       </form>
+      <div>
     </div>
     <div class="section-table" style="margin: 0 25px 0 25px;" id="table">
       <table class="table table-striped table-hover" id="m_table">
         <thead>
           <tr>
+            <th>User</th>
+            <th>Description</th>
             <th>File Name</th>
             <th>Category</th>
-            <th>Uploader</th>
             <th>Date</th>
-            <th>DELETE</th>
           </tr>
         </thead>
         <tbody>
-          {% for file in files %}
+          {% for file in item_list %}
           <tr>
+            <td>{{ file.user }}</td>
+            <td>{{ file.description }}</td>
             <td>{{ file.file_name }}</td>
             <td>{{ file.file_type }}</td>
-            <td>{{ file.uploader }}</td>
-            <td>{{ file.uploaded_date }}</td>
-            <td>
-              <button type="button" class="btn btn-primary" onclick="restorefile('{{file.file_id}}')">Retrieve</button>
-              <button type="button" class="btn btn-danger" onclick="deletefilepermanently()">DELETE</button>
-            </td>
+            <td>{{ file.log_date }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       </table>
+      <div class="pagination justify-content-center" style="margin: 10px 0px 10px 0px;font-weight: bold;">
+        <span class="step-links">
+            {% if item_list.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ item_list.previous_page_number }}">Previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ item_list.number }} of {{ item_list.paginator.num_pages }}.
+            </span>
+    
+            {% if item_list.has_next %}
+                <a href="?page={{ item_list.next_page_number }}">Next</a>
+                <a href="?page={{ item_list.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
     </div>
   </div>
 </div>

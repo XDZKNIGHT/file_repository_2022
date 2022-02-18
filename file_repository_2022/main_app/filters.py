@@ -1,6 +1,6 @@
 from dataclasses import field
 import django_filters
-from .models import UploadedFile, ArchiveFile
+from .models import UploadedFile, ArchiveFile, ActivityLogs
 from django_filters import DateFilter
 
 
@@ -54,3 +54,16 @@ class UserArchiveFileFilter(django_filters.FilterSet):
             'file_type': ['icontains'],
         }
         exclude = ['file', 'uploaded_date', 'uploader']
+
+class ActivityLogFileFilter(django_filters.FilterSet):
+    start_date = DateFilter(field_name='log_date',
+                            lookup_expr='icontains')
+
+    class Meta:
+        model = ActivityLogs
+        fields = {
+            'user': ['icontains'],
+            'file_name': ['icontains'],
+            'file_type': ['icontains'],
+        }
+        exclude = ['file', 'log_date']
